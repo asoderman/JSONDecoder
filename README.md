@@ -1,6 +1,8 @@
 # Simple JSON Parser 
 Written in swift.
 
+v 0.0.1
+
 Usage:
 ```swift
 	let j = JSONParser(text: JSONTEXT).flatten()
