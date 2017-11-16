@@ -1,12 +1,24 @@
 # Simple JSON Parser 
 Written in swift.
 
-v 0.0.1
-
-Usage:
+### Usage:
+Quickstart
 ```swift
-	let j = JSONParser(text: JSONTEXT).flatten()
+	let j = try! JSONParser(text: JSONTEXT).flatten()
 
 	let name = j["name"] as! String
 	let id = j["id"] as! Int
+```
+
+Error handling
+```swift
+	do { 
+		let j = try JSONParser(text: BADJSON).flatten()
+
+		let name = j["name"] as! String
+		let id = j["id"] as! Int
+	} catch {
+		// Do something
+		}
+	}
 ```
