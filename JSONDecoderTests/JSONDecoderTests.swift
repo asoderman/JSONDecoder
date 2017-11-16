@@ -114,8 +114,6 @@ class JSONDecoderTests: XCTestCase {
             XCTFail("No error thrown for JSON Array without closing bracket.")
             return
         }
-        
-        
     }
     
     func testFlatten() {

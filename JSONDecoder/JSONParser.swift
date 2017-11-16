@@ -70,7 +70,7 @@ internal class JSONObject: NSObject {
             case is JSONNull:
                 d[k.unbox()] = nil
             default:
-                print("unknown json type")
+                break
             }
             
             i += 1
@@ -132,7 +132,7 @@ internal class JSONArray: JSONObject {
             case is JSONNull:
                 continue
             default:
-                print("unknown json type")
+                continue
             }
         }
         return a
@@ -290,7 +290,6 @@ open class JSONParser: NSObject {
         self.inString = false
         
         super.init()
-        //self.parse()
     }
     
     internal func parseTree() throws -> JSONObject {
@@ -310,7 +309,7 @@ open class JSONParser: NSObject {
     
     internal func parse() throws -> JSONObject {
         if !(index < tokens.count) {
-            throw ParsingError.ExpectedClosingBrace
+            throw ParsingError.ExpectedClosingBrace(token: tokens.last!)
         }
             switch (t.type) {
             case .openParen:
@@ -383,7 +382,7 @@ open class JSONParser: NSObject {
             do {
             a.append(try parse())
             } catch {
-                throw ParsingError.ExpectedClosingBracket
+                throw ParsingError.ExpectedClosingBracket(token: t)
             }
         }
         next() // consume close bracket token
@@ -393,7 +392,6 @@ open class JSONParser: NSObject {
     
     open func flatten() throws -> Dictionary<String, Any> {
         return try self.parseTree().unbox()
-        
     }
 
 }
@@ -401,24 +399,22 @@ open class JSONParser: NSObject {
 
 enum ParsingError: Error {
     
-    case ExpectedClosingBrace
+    case ExpectedClosingBrace(token: JSONToken)
     case UnknownToken(token: JSONToken)
     case ExpectedQuote(token: JSONToken)
-    case ExpectedClosingBracket
+    case ExpectedClosingBracket(token: JSONToken)
     
     var description: String {
         switch self {
-        case .ExpectedClosingBrace:
-            return "Parser did not find a closing brace."
+        case .ExpectedClosingBrace(let token):
+            return "Parser did not find a closing brace. Instead found: \(token)"
         case .UnknownToken(let token):
             return "Unkown token encountered. \(token)"
         case .ExpectedQuote(let token):
             return "Expected closing quote. Instead found: \(token)"
-        case .ExpectedClosingBracket:
-            return "Parse did not find a closing bracket."
-        default:
-            return "The parser encountered an error."
+        case .ExpectedClosingBracket(let token):
+            return "Parse did not find a closing bracket. Instead found: \(token)"
+            
         }
     }
-    
 }
