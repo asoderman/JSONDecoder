@@ -2,7 +2,6 @@
 
 build/DerivedData
 
-JSONDecoder.xcodeproj/
 xcuserdata
 *.pbxuser
 !default.pbxuser
