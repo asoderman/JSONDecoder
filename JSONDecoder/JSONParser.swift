@@ -293,33 +293,43 @@ open class JSONParser: NSObject {
         //self.parse()
     }
     
-    internal var parseTree: JSONObject {
+    internal func parseTree() throws -> JSONObject {
         // BUG: if parseTree is accessed twice it attempts to parse twice
-        get {
-            return self.parse()
+        do {
+            return try self.parse()
         }
+        catch {
+            print(error)
+            throw error
+            }
     }
     
     private func next() {
         self.index += 1
     }
     
-    internal func parse() -> JSONObject {
+    internal func parse() throws -> JSONObject {
+        if !(index < tokens.count) {
+            throw ParsingError.ExpectedClosingBrace
+        }
             switch (t.type) {
             case .openParen:
-               return parseObject()
+               return try parseObject()
             case .colon:
                 next() // consume colon
-                return parse()
+                return try parse()
             case .comma:
                 next() // consume comma
-                return parse()
+                return try parse()
             case .openBracket:
-                return parseArray()
+                return try parseArray()
             case .quote:
                 next() //consume quote
                 let s = JSONString(value: t.value!)
                 next() // consume string
+                if (t.type != .quote) {
+                    throw ParsingError.ExpectedQuote(token: t)
+                }
                 next() // consume the closing quote token
                 return s
             case .alphanum:
@@ -342,22 +352,20 @@ open class JSONParser: NSObject {
                     } //consume the alphanumeric token for the number
                 }
             default:
-                print("Unknown token: \(t)")
+                throw ParsingError.UnknownToken(token: t)
             }
-        return JSONObject()
     }
     
-    private func parseObject() -> JSONObject {
+    private func parseObject() throws -> JSONObject {
         next() // consume the open bracket
         var keys = [JSONObject]()
         var values = [JSONObject]()
         
-        while t.type != .closeParen {
-            let key = parse()
+        while index < tokens.count && t.type != .closeParen {
+            let key = try parse()
+            let value = try parse()
             
-            let value = parse()
             values.append(value)
-            
             keys.append(key)
         }
         if (self.index < self.tokens.count) {
@@ -366,21 +374,51 @@ open class JSONParser: NSObject {
         return JSONObject(key: keys, value: values)
     }
     
-    private func parseArray() -> JSONObject {
+    private func parseArray() throws -> JSONObject {
         next() // consume open bracket
         
         var a = [JSONObject]()
         
-        while t.type != .closeBracket {
-            a.append(parse())
+        while index < tokens.count && t.type != .closeBracket {
+            do {
+            a.append(try parse())
+            } catch {
+                throw ParsingError.ExpectedClosingBracket
+            }
         }
         next() // consume close bracket token
         return JSONArray(input: a)
         
     }
     
-    open func flatten() -> Dictionary<String, Any> {
-        return self.parseTree.unbox()
+    open func flatten() throws -> Dictionary<String, Any> {
+        return try self.parseTree().unbox()
+        
     }
 
+}
+
+
+enum ParsingError: Error {
+    
+    case ExpectedClosingBrace
+    case UnknownToken(token: JSONToken)
+    case ExpectedQuote(token: JSONToken)
+    case ExpectedClosingBracket
+    
+    var description: String {
+        switch self {
+        case .ExpectedClosingBrace:
+            return "Parser did not find a closing brace."
+        case .UnknownToken(let token):
+            return "Unkown token encountered. \(token)"
+        case .ExpectedQuote(let token):
+            return "Expected closing quote. Instead found: \(token)"
+        case .ExpectedClosingBracket:
+            return "Parse did not find a closing bracket."
+        default:
+            return "The parser encountered an error."
+        }
+    }
+    
 }

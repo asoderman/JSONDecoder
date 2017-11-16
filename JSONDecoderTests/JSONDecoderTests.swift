@@ -17,6 +17,9 @@ class JSONDecoderTests: XCTestCase {
     let boolTest = "{\"auth\" : false, \"logged_in\" : true}"
     let arrayTest = "{\"numbers\" : [1,2,3,4,5] }"
     let objectTest = "{\"json\" : {\"data\" : [1,2]} }"
+    let noCloseBraceTest = "{\"json\" : 12"
+    let noCloseQuote = "{\"json\" : \"a string}"
+    let noCloseBracket = "{\"json\" : [ 1, 2, 3 }"
     
     let fullTest = """
     {
@@ -50,14 +53,12 @@ class JSONDecoderTests: XCTestCase {
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {
-            let _ = JSONParser(text: fullTest).flatten()
+            let _ = try! JSONParser(text: fullTest).flatten()
         }
     }
     
     func testScan() {
         let result = JSONScanner.scan(input: fullTest)
-        
-        print(result)
         
         XCTAssert(result[0].type == .openParen)
         XCTAssert(result[1].type == .quote)
@@ -68,36 +69,58 @@ class JSONDecoderTests: XCTestCase {
     func testParse() {
         
         // Test string parsing functionality
-        let result = JSONParser(text: stringTest).parseTree
+        let result = try! JSONParser(text: stringTest).parseTree()
         
         XCTAssert(result.keys.count == 1 && result.values.count == 1)
         
         // Test number parsing functionality
         
-        let numberResult = JSONParser(text: numberTest).parseTree
+        let numberResult = try! JSONParser(text: numberTest).parseTree()
         
         XCTAssert(numberResult.values[0]?.value! as! Int == 1234)
         
         // Test boolean parsing functionality
-        let bool_result = JSONParser(text: boolTest).parseTree
+        let bool_result = try! JSONParser(text: boolTest).parseTree()
         
         XCTAssert(bool_result.keys.count == 2 && bool_result.values.count == 2)
         
         // Test array parsing functionality
         let testArrays = arrayTest
-        let arrayResults = JSONParser(text: testArrays).parseTree
+        let arrayResults = try! JSONParser(text: testArrays).parseTree()
         let a = arrayResults.values[0] as! JSONArray
         XCTAssert(a.elements.count == 5)
         
         // full test
-        let fullResult = JSONParser(text: fullTest).parseTree
+        let fullResult = try! JSONParser(text: fullTest).parseTree()
         XCTAssert(fullResult.keys.count == 8)
+        
+    }
+    
+    func testParseFail() {
+        // Tests that the parser can fail
+        // The closures will only be called if the code succesfully runs
+        // with improper JSON.
+        
+        if let _ = try? JSONParser(text: noCloseBraceTest).parseTree() {
+            XCTFail("No error thrown for JSON without closing brace")
+            return
+        }
+        if let _ = try? JSONParser(text: noCloseQuote).parseTree() {
+            XCTFail("No error thrown for JSON without closing quote")
+            return
+        }
+        
+        if let _ = try? JSONParser(text: noCloseBracket).parseTree() {
+            XCTFail("No error thrown for JSON Array without closing bracket.")
+            return
+        }
+        
         
     }
     
     func testFlatten() {
         
-        let result = JSONParser(text: fullTest).flatten()
+        let result = try! JSONParser(text: fullTest).flatten()
         
         XCTAssert(result["id"] as! Int == 1)
         XCTAssert((result["numbers"] as! [Any?]).count == 10)
