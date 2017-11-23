@@ -126,3 +126,14 @@ class JSONDecoderTests: XCTestCase {
     }
     
 }
+
+extension JSONDecoderTests {
+    static var allTests : [(String, (JSONDecoderTests) -> () -> Void)] {
+    return  [
+            ("testScan", testScan),
+            ("testParse", testParse),
+            ("testParseFail", testParseFail),
+            ("testFlatten", testFlatten)
+        ]
+    }
+}
