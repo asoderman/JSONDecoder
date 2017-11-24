@@ -6,7 +6,7 @@
 //  Copyright © 2017 Alex Soderman. All rights reserved.
 //
 
-class JSONToken: NSObject {
+class JSONToken: CustomStringConvertible {
     
     let type: symbol
     var value: String?
@@ -20,7 +20,7 @@ class JSONToken: NSObject {
         self.value = value
     }
     
-    override var description: String {
+    var description: String {
         get {
             return "JSONToken: { type: \(self.type as Optional) : value: \(self.value as Optional) } "
         }

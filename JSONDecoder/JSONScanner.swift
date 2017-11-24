@@ -6,7 +6,7 @@
 //  Copyright © 2017 Alex Soderman. All rights reserved.
 //
 
-class JSONScanner: NSObject {
+class JSONScanner {
     
     static func scan(input: String) -> [JSONToken] {
         

@@ -7,14 +7,14 @@
 //
 
 
-internal class JSONObject: NSObject {
+internal class JSONObject: CustomStringConvertible {
     
     let key: JSONObject?
     var keys: [JSONObject?]
     var value: Any?
     var values: [JSONObject?]
     
-    override var description: String {
+    var description: String {
         get {
             var s = "{ \n"
             var i = 0
@@ -27,7 +27,7 @@ internal class JSONObject: NSObject {
         }
     }
     
-    override init() {
+    init() {
         self.key = nil
         self.keys = [JSONObject]()
         self.values = [JSONObject]()
