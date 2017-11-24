@@ -1,1 +1,3 @@
 language: swift
+script:
+- bundle exec swift test
