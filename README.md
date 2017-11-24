@@ -1,5 +1,5 @@
 # Simple JSON Parser 
-Written in swift.
+Written in swift. [![Build Status](https://travis-ci.org/asoderman/JSONDecoder.svg?branch=master)](https://travis-ci.org/asoderman/JSONDecoder)
 
 ### Installation:
 Using SPM (in your Package.swift):
