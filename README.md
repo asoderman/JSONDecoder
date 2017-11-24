@@ -37,3 +37,9 @@ Error handling
 		}
 	}
 ```
+
+### To work on this library:
+1. Fork this repo on github.
+2. Create a local copy of your repo.
+3. ```swift package generate-xcodeproj ```
+4. Submit pull requests.
