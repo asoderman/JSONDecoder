@@ -267,7 +267,7 @@ internal class JSONNumber: JSONObject {
     }
 }
 
-open class JSONParser: NSObject {
+open class JSONParser: CustomStringConvertible {
     
     let tokens: [JSONToken]
     private var index: Int
@@ -278,7 +278,7 @@ open class JSONParser: NSObject {
         }
     }
     
-    override open var description: String {
+    open var description: String {
         get {
             return "JSONParser: parseTree = \(parseTree)"
         }
@@ -288,8 +288,6 @@ open class JSONParser: NSObject {
         self.tokens = JSONScanner.scan(input: text)
         self.index = 0
         self.inString = false
-        
-        super.init()
     }
     
     internal func parseTree() throws -> JSONObject {
