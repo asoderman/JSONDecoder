@@ -1,4 +1,9 @@
 language: objective-c
 osx_image: xcode9.1
+
+before_install:
+-gem install xcpretty -N
+
 script:
-- xcodebuild test -scheme JSONDecoder-Package
+- set -o pipefail
+- xcodebuild test -scheme JSONDecoder-Package | xcpretty -c
