@@ -7,9 +7,13 @@ Using SPM (in your Package.swift):
 let package = Package(
 	name: "NameOfYourProject",
 	dependencies: [
-		.Package(url: "https://github.com/asoderman/JSONDecoder.git", majorVersion: 0, minorVersion: 1)
+		.package(url: "https://github.com/asoderman/JSONDecoder.git", from: "0.1.0")
 	]
 )
+```
+then
+```
+swift package resolve
 ```
 
 ### Usage:
