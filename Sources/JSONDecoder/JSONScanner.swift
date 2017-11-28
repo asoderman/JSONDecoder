@@ -13,6 +13,7 @@ class JSONScanner {
         var tokens = [JSONToken]()
         var buffer: String = ""
         var scanningString = false
+        var escape = -1
         
         func commitString() {
             if buffer != "" {
@@ -21,7 +22,7 @@ class JSONScanner {
             }
         }
         
-        for c in input {
+        for (index, c) in input.enumerated() {
             switch (c) {
             case "{":
                 if(scanningString) { buffer.append(c);continue }
@@ -33,7 +34,14 @@ class JSONScanner {
                 if(scanningString) { buffer.append(c);continue }
                 commitString()
                 tokens.append(JSONToken(type: .closeParen))
+            case "\\":
+                if(scanningString) { escape = index; continue }
             case "\"":
+                if (escape == index-1) {
+                    print("INDEX: \(index) ESCAPE: \(escape)")
+                    buffer.append("\"")
+                    continue
+                }
                 commitString()
                 scanningString = !scanningString
                 tokens.append(JSONToken(type: .quote))

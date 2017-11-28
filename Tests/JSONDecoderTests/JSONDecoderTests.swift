@@ -86,6 +86,12 @@ class JSONDecoderTests: XCTestCase {
         XCTAssert(result[6].type == .alphanum)
     }
     
+    func testScanEscapedQuote() {
+        let result = JSONScanner.scan(input: "{\"characters\" : \"\\\"\" }")
+        print(result)
+        XCTAssert(result[6].value == "\"")
+    }
+    
     func testParse() {
         
         // Test string parsing functionality
@@ -158,6 +164,7 @@ extension JSONDecoderTests {
             ("testScan", testScan),
             ("testScanCommaInString", testScanCommaInString),
             ("testScanTokenCharsInString", testScanTokenCharsInString),
+            ("testScanEscapedQuote", testScanEscapedQuote),
             ("testParse", testParse),
             ("testParseFail", testParseFail),
             ("testFlatten", testFlatten),
