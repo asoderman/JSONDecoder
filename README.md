@@ -7,7 +7,7 @@ Using SPM (in your Package.swift):
 let package = Package(
 	name: "NameOfYourProject",
 	dependencies: [
-		.package(url: "https://github.com/asoderman/JSONDecoder.git", from: "0.1.3")
+		.package(url: "https://github.com/asoderman/JSONDecoder.git", from: "0.1.4")
 	]
 )
 ```

@@ -38,7 +38,6 @@ class JSONScanner {
                 if(scanningString) { escape = index; continue }
             case "\"":
                 if (escape == index-1) {
-                    print("INDEX: \(index) ESCAPE: \(escape)")
                     buffer.append("\"")
                     continue
                 }
