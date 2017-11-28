@@ -88,7 +88,6 @@ class JSONDecoderTests: XCTestCase {
     
     func testScanEscapedQuote() {
         let result = JSONScanner.scan(input: "{\"characters\" : \"\\\"\" }")
-        print(result)
         XCTAssert(result[6].value == "\"")
     }
     
@@ -156,6 +155,18 @@ class JSONDecoderTests: XCTestCase {
         XCTAssert(result["ratio"] as! Float == 0.5)
     }
     
+    func testFlattenObjectInObject() {
+        let result = try! JSONParser(text: "{\"object\" : {\"id\" : 1 }}").flatten()
+        let o = result["object"] as! Dictionary<String, Any>
+        XCTAssert(o["id"] as! Int == 1)
+    }
+    
+    func testFlattenObjectInArray() {
+        let result = try! JSONParser(text: "{\"objects\" : [{\"id\" : 1 }]}").flatten()
+        let o = result["objects"] as! Array<Any>
+        let a = o[0] as! Dictionary<String, Any>
+        XCTAssert(a["id"] as! Int == 1)
+    }
 }
 
 extension JSONDecoderTests {

@@ -70,7 +70,7 @@ internal class JSONObject: CustomStringConvertible {
             case is JSONNull:
                 d[k.unbox()] = nil
             default:
-                break
+                d[k.unbox()] = v!.unbox() as Dictionary<String,Any>
             }
             
             i += 1
@@ -132,7 +132,7 @@ internal class JSONArray: JSONObject {
             case is JSONNull:
                 continue
             default:
-                continue
+                a.append(x.unbox())
             }
         }
         return a
