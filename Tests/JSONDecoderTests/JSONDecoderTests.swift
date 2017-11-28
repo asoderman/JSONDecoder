@@ -157,6 +157,7 @@ extension JSONDecoderTests {
     return  [
             ("testScan", testScan),
             ("testScanCommaInString", testScanCommaInString),
+            ("testScanTokenCharsInString", testScanTokenCharsInString),
             ("testParse", testParse),
             ("testParseFail", testParseFail),
             ("testFlatten", testFlatten),
