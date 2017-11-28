@@ -284,7 +284,7 @@ open class JSONParser: CustomStringConvertible {
         }
     }
     
-    init(text: String) {
+    public init(text: String) {
         self.tokens = JSONScanner.scan(input: text)
         self.index = 0
         self.inString = false
