@@ -94,30 +94,16 @@ class JSONDecoderTests: XCTestCase {
     func testParse() {
         
         // Test string parsing functionality
-        let result = try! JSONParser(text: stringTest).parseTree()
+        let result = try! JSONParser(text: fullTest).parseTree()
         
-        XCTAssert(result.keys.count == 1 && result.values.count == 1)
-        
-        // Test number parsing functionality
-        
-        let numberResult = try! JSONParser(text: numberTest).parseTree()
-        
-        XCTAssert(numberResult.values[0]?.value! as! Int == 1234)
-        
-        // Test boolean parsing functionality
-        let bool_result = try! JSONParser(text: boolTest).parseTree()
-        
-        XCTAssert(bool_result.keys.count == 2 && bool_result.values.count == 2)
-        
-        // Test array parsing functionality
-        let testArrays = arrayTest
-        let arrayResults = try! JSONParser(text: testArrays).parseTree()
-        let a = arrayResults.values[0] as! JSONArray
-        XCTAssert(a.elements.count == 5)
-        
-        // full test
-        let fullResult = try! JSONParser(text: fullTest).parseTree()
-        XCTAssert(fullResult.keys.count == 8)
+        switch result {
+        case .JSONObject(value: let d):
+            let a = Array(d.keys)
+            let b = Array(d.values)
+            XCTAssert(a.count == 8 && b.count == 8)
+        default:
+            XCTFail()
+        }
         
     }
     
@@ -150,9 +136,10 @@ class JSONDecoderTests: XCTestCase {
         
         let result = try! JSONParser(text: fullTest).flatten()
         
+        print(result)
         XCTAssert(result["id"] as! Int == 1)
         XCTAssert((result["numbers"] as! [Any?]).count == 10)
-        XCTAssert(result["ratio"] as! Float == 0.5)
+        XCTAssert(result["ratio"] as! Double == 0.5)
     }
     
     func testFlattenObjectInObject() {
@@ -166,6 +153,16 @@ class JSONDecoderTests: XCTestCase {
         let o = result["objects"] as! Array<Any>
         let a = o[0] as! Dictionary<String, Any>
         XCTAssert(a["id"] as! Int == 1)
+    }
+    
+    func testjmap() {
+        let result = try! JSONParser(text: numberTest).parse()
+        
+        var num: Int = 0
+        
+        jmap(j: result, key: "number", property: &num)
+        
+        XCTAssert(num == 1234)
     }
 }
 

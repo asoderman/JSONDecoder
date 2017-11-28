@@ -7,7 +7,7 @@
 //
 
 
-internal class JSONObject: CustomStringConvertible {
+/* internal class JSONObject: CustomStringConvertible {
     
     let key: JSONObject?
     var keys: [JSONObject?]
@@ -265,7 +265,7 @@ internal class JSONNumber: JSONObject {
     func unbox() -> Int {
         return self.numberValue
     }
-}
+} */
 
 open class JSONParser: CustomStringConvertible {
     
@@ -290,7 +290,7 @@ open class JSONParser: CustomStringConvertible {
         self.inString = false
     }
     
-    internal func parseTree() throws -> JSONObject {
+    internal func parseTree() throws -> JSONType {
         // BUG: if parseTree is accessed twice it attempts to parse twice
         do {
             return try self.parse()
@@ -309,7 +309,7 @@ open class JSONParser: CustomStringConvertible {
         }
     }
     
-    internal func parse() throws -> JSONObject {
+    internal func parse() throws -> JSONType {
         if !(index < tokens.count) {
             throw ParsingError.ExpectedClosingBrace()
         }
@@ -326,12 +326,12 @@ open class JSONParser: CustomStringConvertible {
                 return try parseArray()
             case .quote:
                 try next() //consume quote
-                let s: JSONString
+                let s: JSONType
                 if  index < tokens.count && t.value != nil {
-                    s = JSONString(value: t.value!)
+                    s = JSONType.JSONString(value: t.value!)
                     try next() // consume string
                 } else  {
-                    s = JSONString(value: "")
+                    s = JSONType.JSONString(value: "")
                 }
                 if (index < tokens.count && t.type != .quote) {
                     throw ParsingError.ExpectedQuote(token: t)
@@ -340,23 +340,30 @@ open class JSONParser: CustomStringConvertible {
                 return s
             case .alphanum:
                 if t.value == "true" || t.value == "false" {
-                    let v = t.value!
                     try next() // consume the boolean token
-                    let result = JSONBool(value: v)
+                    let result: JSONType
+                    switch t.value! {
+                    case "true":
+                       result = JSONType.JSONBool(value: true)
+                    case "false":
+                        result = JSONType.JSONBool(value: false)
+                    default:
+                        throw ParsingError.ExpectedBool
+                    }
                     return result
                 } else if t.value == "null" {
-                    let result = JSONNull()
+                    let result = JSONType.JSONNull()
                     try next() // consume the null token
                     return result
                 } else {
                     // it is a number
                     let v = t.value!
                     if v.contains(".") {
-                        let result = JSONFloat(value: v)
+                        let result = JSONType.JSONFloat(value: Double(v)!)
                         try next()
                         return result
                     } else {
-                        let result = JSONNumber(value: v)
+                        let result = JSONType.JSONInt(value: Int(v)!)
                         try next()
                         return result
                     } //consume the alphanumeric token for the number
@@ -366,28 +373,32 @@ open class JSONParser: CustomStringConvertible {
             }
     }
     
-    private func parseObject() throws -> JSONObject {
+    private func parseObject() throws -> JSONType {
         try next() // consume the open bracket
-        var keys = [JSONObject]()
-        var values = [JSONObject]()
+        var d = Dictionary<String, JSONType>()
         
         while index < tokens.count && t.type != .closeParen {
             let key = try parse()
             let value = try parse()
+            switch key {
+            case .JSONString(value: let v):
+                d[v] = value
+            default:
+                throw ParsingError.ExpectedIdentifier
+            }
             
-            values.append(value)
-            keys.append(key)
         }
         if (self.index < self.tokens.count) {
             try next() // consume the inner close brace
         }
-        return JSONObject(key: keys, value: values)
+        
+        return JSONType.JSONObject(value: d)
     }
     
-    private func parseArray() throws -> JSONObject {
+    private func parseArray() throws -> JSONType {
         try next() // consume open bracket
         
-        var a = [JSONObject]()
+        var a = [JSONType]()
         
         while index < tokens.count && t.type != .closeBracket {
             do {
@@ -397,14 +408,48 @@ open class JSONParser: CustomStringConvertible {
             }
         }
         try next() // consume close bracket token
-        return JSONArray(input: a)
+        return JSONType.JSONArray(value: a)
         
     }
     
-    open func flatten() throws -> Dictionary<String, Any> {
-        return try self.parseTree().unbox()
+    open func flatten() throws -> Dictionary<String, Any?> {
+        
+        func flatten_helper(j: JSONType) -> Any? {
+            switch j {
+            case .JSONObject(let v):
+                var d = Dictionary<String, Any?>()
+                for (key, value) in v {
+                    d[key] = flatten_helper(j: value)
+                }
+                return d
+            case .JSONArray(value: let v):
+                var a = [Any]()
+                for e in v {
+                    a.append(flatten_helper(j: e))
+                }
+                return a
+            case .JSONBool(value: let v):
+                return v
+            case .JSONInt(value: let v):
+                return v
+            case .JSONString(value: let v):
+                return v
+            case .JSONFloat(value: let v):
+                return v
+            case .JSONNull:
+                return nil
+            }
+        }
+        
+        do {
+            let v = try self.parseTree()
+            let result = flatten_helper(j: v) as! Dictionary<String, Any?>
+        
+            return result
+        } catch {
+            throw ParsingError.NoTopLevelObject
+        }
     }
-
 }
 
 
@@ -414,6 +459,9 @@ enum ParsingError: Error {
     case UnknownToken(token: JSONToken)
     case ExpectedQuote(token: JSONToken)
     case ExpectedClosingBracket(token: JSONToken)
+    case ExpectedIdentifier
+    case ExpectedBool
+    case NoTopLevelObject
     
     var description: String {
         switch self {
@@ -425,7 +473,12 @@ enum ParsingError: Error {
             return "Expected closing quote. Instead found: \(token)"
         case .ExpectedClosingBracket(let token):
             return "Parse did not find a closing bracket. Instead found: \(token)"
-            
+        case .ExpectedIdentifier:
+            return "Parse Expected an identfier for the object property. Instead found non-string type."
+        case .ExpectedBool:
+            return "Parse expected a bool but instead received a string that was not true or false."
+        case .NoTopLevelObject:
+            return ""
         }
     }
 }
