@@ -47,7 +47,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		FA6D0E0D1FCD58FC0053FD4C /* JSONTEST.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = JSONTEST.json; sourceTree = "<group>"; };
 		"JSONDecoder::JSONDecoder::Product" /* JSONDecoder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = JSONDecoder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"JSONDecoder::JSONDecoderTests::Product" /* JSONDecoderTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = JSONDecoderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_10 /* JSONScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONScanner.swift; sourceTree = "<group>"; };
@@ -87,7 +86,6 @@
 		OBJ_13 /* JSONDecoderTests */ = {
 			isa = PBXGroup;
 			children = (
-				FA6D0E0D1FCD58FC0053FD4C /* JSONTEST.json */,
 				OBJ_14 /* JSONDecoderTests.swift */,
 			);
 			name = JSONDecoderTests;
