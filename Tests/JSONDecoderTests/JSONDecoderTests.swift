@@ -35,6 +35,8 @@ class JSONDecoderTests: XCTestCase {
     }
 """
     
+    
+    
     override func setUp() {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -64,6 +66,24 @@ class JSONDecoderTests: XCTestCase {
         XCTAssert(result[1].type == .quote)
         XCTAssert(result.last!.type == .closeParen)
         XCTAssert(result[result.endIndex - 1].type == .closeParen)
+    }
+    
+    func testScanCommaInString() {
+        // Ensures the scanner ignores commas in strings
+        
+        let result = JSONScanner.scan(input: "{\"balance\" : \"$3,000\"}")
+        
+        XCTAssert(result[6].type == .alphanum)
+        
+    }
+    
+    func testScanTokenCharsInString() {
+        // Ensures the scanner can scan characters that also happen
+        // to be tokens inside of strings
+        
+        let result = JSONScanner.scan(input: "{\"characters\" : \"[]{}:\" }")
+        
+        XCTAssert(result[6].type == .alphanum)
     }
     
     func testParse() {
@@ -116,6 +136,11 @@ class JSONDecoderTests: XCTestCase {
         }
     }
     
+    func testEmptyString() {
+        // Ensures the parser can handle empty strings
+        let _ = try! JSONParser(text: "{\"name\" : \"\" }").flatten()
+    }
+    
     func testFlatten() {
         
         let result = try! JSONParser(text: fullTest).flatten()
@@ -131,9 +156,11 @@ extension JSONDecoderTests {
     static var allTests : [(String, (JSONDecoderTests) -> () -> Void)] {
     return  [
             ("testScan", testScan),
+            ("testScanCommaInString", testScanCommaInString),
             ("testParse", testParse),
             ("testParseFail", testParseFail),
-            ("testFlatten", testFlatten)
+            ("testFlatten", testFlatten),
+            ("testEmptyString", testEmptyString)
         ]
     }
 }

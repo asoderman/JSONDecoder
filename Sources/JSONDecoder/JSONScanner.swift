@@ -24,10 +24,13 @@ class JSONScanner {
         for c in input {
             switch (c) {
             case "{":
+                if(scanningString) { buffer.append(c);continue }
                 tokens.append(JSONToken(type: .openParen))
             case ":":
+                if(scanningString) { buffer.append(c);continue }
                 tokens.append(JSONToken(type: .colon))
             case "}":
+                if(scanningString) { buffer.append(c);continue }
                 commitString()
                 tokens.append(JSONToken(type: .closeParen))
             case "\"":
@@ -35,11 +38,14 @@ class JSONScanner {
                 scanningString = !scanningString
                 tokens.append(JSONToken(type: .quote))
             case "[":
+                if(scanningString) { buffer.append(c);continue }
                 tokens.append(JSONToken(type: .openBracket))
             case "]":
+                if(scanningString) { buffer.append(c);continue }
                 commitString()
                 tokens.append(JSONToken(type: .closeBracket))
             case ",":
+                if(scanningString) { buffer.append(c);continue }
                 commitString()
                 tokens.append(JSONToken(type: .comma))
             default:

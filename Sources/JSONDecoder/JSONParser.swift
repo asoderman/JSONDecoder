@@ -301,50 +301,63 @@ open class JSONParser: CustomStringConvertible {
             }
     }
     
-    private func next() {
+    private func next() throws {
         self.index += 1
+        //print("Token: \(index)/\(tokens.count)")
+        if index > tokens.count {
+            throw ParsingError.ExpectedClosingBrace()
+        }
     }
     
     internal func parse() throws -> JSONObject {
         if !(index < tokens.count) {
-            throw ParsingError.ExpectedClosingBrace(token: tokens.last!)
+            throw ParsingError.ExpectedClosingBrace()
         }
             switch (t.type) {
             case .openParen:
                return try parseObject()
             case .colon:
-                next() // consume colon
+                try next() // consume colon
                 return try parse()
             case .comma:
-                next() // consume comma
+                try next() // consume comma
                 return try parse()
             case .openBracket:
                 return try parseArray()
             case .quote:
-                next() //consume quote
-                let s = JSONString(value: t.value!)
-                next() // consume string
-                if (t.type != .quote) {
+                try next() //consume quote
+                let s: JSONString
+                if  index < tokens.count && t.value != nil {
+                    s = JSONString(value: t.value!)
+                    try next() // consume string
+                } else  {
+                    s = JSONString(value: "")
+                }
+                if (index < tokens.count && t.type != .quote) {
                     throw ParsingError.ExpectedQuote(token: t)
                 }
-                next() // consume the closing quote token
+                try next() // consume the closing quote token
                 return s
             case .alphanum:
                 if t.value == "true" || t.value == "false" {
                     let v = t.value!
-                    next() // consume the boolean token
+                    try next() // consume the boolean token
                     let result = JSONBool(value: v)
+                    return result
+                } else if t.value == "null" {
+                    let result = JSONNull()
+                    try next() // consume the null token
                     return result
                 } else {
                     // it is a number
                     let v = t.value!
                     if v.contains(".") {
                         let result = JSONFloat(value: v)
-                        next()
+                        try next()
                         return result
                     } else {
                         let result = JSONNumber(value: v)
-                        next()
+                        try next()
                         return result
                     } //consume the alphanumeric token for the number
                 }
@@ -354,7 +367,7 @@ open class JSONParser: CustomStringConvertible {
     }
     
     private func parseObject() throws -> JSONObject {
-        next() // consume the open bracket
+        try next() // consume the open bracket
         var keys = [JSONObject]()
         var values = [JSONObject]()
         
@@ -366,13 +379,13 @@ open class JSONParser: CustomStringConvertible {
             keys.append(key)
         }
         if (self.index < self.tokens.count) {
-            next() // consume the inner close brace 
+            try next() // consume the inner close brace
         }
         return JSONObject(key: keys, value: values)
     }
     
     private func parseArray() throws -> JSONObject {
-        next() // consume open bracket
+        try next() // consume open bracket
         
         var a = [JSONObject]()
         
@@ -383,7 +396,7 @@ open class JSONParser: CustomStringConvertible {
                 throw ParsingError.ExpectedClosingBracket(token: t)
             }
         }
-        next() // consume close bracket token
+        try next() // consume close bracket token
         return JSONArray(input: a)
         
     }
@@ -397,15 +410,15 @@ open class JSONParser: CustomStringConvertible {
 
 enum ParsingError: Error {
     
-    case ExpectedClosingBrace(token: JSONToken)
+    case ExpectedClosingBrace()
     case UnknownToken(token: JSONToken)
     case ExpectedQuote(token: JSONToken)
     case ExpectedClosingBracket(token: JSONToken)
     
     var description: String {
         switch self {
-        case .ExpectedClosingBrace(let token):
-            return "Parser did not find a closing brace. Instead found: \(token)"
+        case .ExpectedClosingBrace():
+            return "Parser did not find a closing brace."
         case .UnknownToken(let token):
             return "Unkown token encountered. \(token)"
         case .ExpectedQuote(let token):
